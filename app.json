@@ -22,14 +22,21 @@
       "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": ["expo-router", "expo-font", "expo-camera", "expo-media-library", "expo-web-browser"],
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-camera",
+      "expo-media-library",
+      "expo-web-browser"
+    ],
     "experiments": {
       "typedRoutes": true
     },
-    "permissions": [
-      "CAMERA",
-      "WRITE_EXTERNAL_STORAGE",
-      "READ_EXTERNAL_STORAGE"
-    ]
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id"
+      }
+    },
+    "permissions": ["CAMERA", "WRITE_EXTERNAL_STORAGE", "READ_EXTERNAL_STORAGE"]
   }
 }

@@ -1,5 +1,2 @@
-// Import polyfills first
-import './polyfills';
-
-// Then import the Expo Router entry
+// Simple entry point with no dependencies
 import 'expo-router/entry';
