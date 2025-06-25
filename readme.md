@@ -69,7 +69,7 @@ ShotMate/
 
 ## 🙋‍♂️ Credits
 
-Created by Lê Quốc Trung — as both a continuation of an HCI project and a passion-driven mobile app to empower everyday photographers.
+Created by Trung Le — as both a continuation of an HCI project and a passion-driven mobile app to empower everyday photographers.
 
 > This is a solo developer project. Contributions, feedback, or pose asset designers are welcome!
 
@@ -78,7 +78,7 @@ Created by Lê Quốc Trung — as both a continuation of an HCI project and a p
 ## 📬 Contact
 
 - Email: [tquoc6@gatech.edu](mailto:tquoc6@gatech.edu)
-- GitHub: \[your-github-link-here]
+- GitHub: https://github.com/lqtrung-95/shot-mage
 
 ---
 
