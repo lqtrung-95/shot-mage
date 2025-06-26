@@ -33,6 +33,7 @@ import {
   RotateCcw,
   RotateCw,
   FlipVertical,
+  Rotate3D,
 } from 'lucide-react-native';
 import * as MediaLibrary from 'expo-media-library';
 import Slider from '@react-native-community/slider';
@@ -50,14 +51,17 @@ export default function CameraScreen() {
   const [showScaleSlider, setShowScaleSlider] = useState(false);
   const [showPositionControls, setShowPositionControls] = useState(false);
   const [showRotationControls, setShowRotationControls] = useState(false);
+  const [showZDegreeControls, setShowZDegreeControls] = useState(false);
   const [showTips, setShowTips] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [overlayScale, setOverlayScale] = useState(1);
   const [overlayOffsetX, setOverlayOffsetX] = useState(0);
   const [overlayOffsetY, setOverlayOffsetY] = useState(0);
   const [overlayRotation, setOverlayRotation] = useState(0);
+  const [overlayZRotation, setOverlayZRotation] = useState(0);
   const [overlayFlipY, setOverlayFlipY] = useState(false);
   const [rotationInputValue, setRotationInputValue] = useState('0');
+  const [zRotationInputValue, setZRotationInputValue] = useState('0');
   const [overlayFlipX, setOverlayFlipX] = useState(false);
   const cameraRef = useRef<CameraView>(null);
   const router = useRouter();
@@ -70,6 +74,16 @@ export default function CameraScreen() {
     setOverlayOpacity,
     addCapturedPhoto,
   } = usePoseStore();
+
+  // Check if any menu is currently open
+  const isAnyMenuOpen =
+    showOverlayMenu ||
+    showOpacitySlider ||
+    showScaleSlider ||
+    showPositionControls ||
+    showRotationControls ||
+    showZDegreeControls ||
+    showTips;
 
   if (!permission) {
     return <View style={styles.container} />;
@@ -166,7 +180,9 @@ export default function CameraScreen() {
     setOverlayOffsetX(0);
     setOverlayOffsetY(0);
     setOverlayRotation(0);
+    setOverlayZRotation(0);
     setRotationInputValue('0');
+    setZRotationInputValue('0');
     setOverlayFlipY(false);
     setOverlayFlipX(false);
   };
@@ -177,6 +193,7 @@ export default function CameraScreen() {
     setShowScaleSlider(false);
     setShowPositionControls(false);
     setShowRotationControls(false);
+    setShowZDegreeControls(false);
     setShowTips(false);
   };
 
@@ -219,6 +236,15 @@ export default function CameraScreen() {
         facing={facing}
         ratio="16:9"
       >
+        {/* Background overlay for closing menus */}
+        {isAnyMenuOpen && (
+          <TouchableOpacity
+            style={styles.backgroundOverlay}
+            activeOpacity={1}
+            onPress={closeAllMenus}
+          />
+        )}
+
         {/* Pose Overlay */}
         {selectedPose && showOverlay && (
           <View
@@ -230,6 +256,7 @@ export default function CameraScreen() {
                   { translateY: overlayOffsetY },
                   { scale: overlayScale },
                   { rotate: `${overlayRotation}deg` },
+                  { rotateZ: `${overlayZRotation}deg` },
                   { scaleY: overlayFlipY ? -1 : 1 },
                   { scaleX: overlayFlipX ? -1 : 1 },
                 ],
@@ -271,7 +298,12 @@ export default function CameraScreen() {
         )}
 
         {/* Top Controls */}
-        <View style={styles.topControls}>
+        <View
+          style={[
+            styles.topControls,
+            isAnyMenuOpen && styles.topControlsHidden,
+          ]}
+        >
           <TouchableOpacity
             style={styles.controlButton}
             onPress={toggleCameraFacing}
@@ -297,6 +329,8 @@ export default function CameraScreen() {
                 setShowOpacitySlider(false);
                 setShowScaleSlider(false);
                 setShowPositionControls(false);
+                setShowRotationControls(false);
+                setShowZDegreeControls(false);
               }}
             >
               <Lightbulb size={24} color="#FFFFFF" />
@@ -387,17 +421,35 @@ export default function CameraScreen() {
                       setShowOpacitySlider(false);
                       setShowScaleSlider(false);
                       setShowPositionControls(false);
+                      setShowZDegreeControls(false);
                     }}
                   >
                     <RotateCw size={24} color="#FFFFFF" />
                     <Text style={styles.menuOptionText}>Adjust Rotation</Text>
                   </TouchableOpacity>
 
+                  <TouchableOpacity
+                    style={styles.menuOption}
+                    onPress={() => {
+                      setShowZDegreeControls(true);
+                      setShowOverlayMenu(false);
+                      setShowOpacitySlider(false);
+                      setShowScaleSlider(false);
+                      setShowPositionControls(false);
+                      setShowRotationControls(false);
+                    }}
+                  >
+                    <Rotate3D size={24} color="#FFFFFF" />
+                    <Text style={styles.menuOptionText}>Adjust Z-Rotation</Text>
+                  </TouchableOpacity>
+
                   {(overlayScale !== 1 ||
                     overlayOffsetX !== 0 ||
                     overlayOffsetY !== 0 ||
                     overlayRotation !== 0 ||
-                    overlayFlipY !== false) && (
+                    overlayZRotation !== 0 ||
+                    overlayFlipY !== false ||
+                    overlayFlipX !== false) && (
                     <TouchableOpacity
                       style={styles.menuOption}
                       onPress={() => {
@@ -621,6 +673,77 @@ export default function CameraScreen() {
           </KeyboardAvoidingView>
         )}
 
+        {/* Z-Degree Rotation Controls */}
+        {showZDegreeControls && showOverlay && (
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.rotationControlsContainer}
+          >
+            <View style={styles.controlHeader}>
+              <Text style={styles.sliderLabel}>Adjust Z-Rotation</Text>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setShowZDegreeControls(false)}
+              >
+                <X size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.positionButtonsRow}>
+              <TouchableOpacity
+                style={styles.positionButton}
+                onPress={() => {
+                  const newRotation = overlayZRotation - 5;
+                  setOverlayZRotation(newRotation);
+                  setZRotationInputValue(String(newRotation));
+                }}
+              >
+                <RotateCcw size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.positionButton, styles.resetPositionButton]}
+                onPress={() => {
+                  setOverlayZRotation(0);
+                  setZRotationInputValue('0');
+                }}
+              >
+                <Text style={styles.positionButtonText}>Reset</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.positionButton}
+                onPress={() => {
+                  const newRotation = overlayZRotation + 5;
+                  setOverlayZRotation(newRotation);
+                  setZRotationInputValue(String(newRotation));
+                }}
+              >
+                <RotateCw size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Precise Z-rotation input */}
+            <View style={styles.rotationInputContainer}>
+              <Text style={styles.rotationText}>Z-Rotation: </Text>
+              <TextInput
+                style={styles.rotationInput}
+                value={zRotationInputValue}
+                onChangeText={setZRotationInputValue}
+                onBlur={() => {
+                  const angle = parseInt(zRotationInputValue) || 0;
+                  setOverlayZRotation(angle);
+                  setZRotationInputValue(String(angle));
+                }}
+                keyboardType="number-pad"
+                placeholder="0"
+                placeholderTextColor="#CCCCCC"
+              />
+              <Text style={styles.rotationText}>°</Text>
+            </View>
+          </KeyboardAvoidingView>
+        )}
+
         {/* Tips Panel */}
         {showTips && selectedPose && (
           <View style={styles.tipsContainer}>
@@ -737,7 +860,7 @@ const styles = StyleSheet.create({
     right: 20,
     flexDirection: 'column',
     gap: 12,
-    zIndex: 10,
+    zIndex: 15,
   },
   controlButton: {
     width: 48,
@@ -817,13 +940,18 @@ const styles = StyleSheet.create({
   },
   overlayMenuContainer: {
     position: 'absolute',
-    top: 160,
+    top: 120,
     right: 20,
     width: 220,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
     padding: 16,
     borderRadius: 12,
-    zIndex: 30,
+    zIndex: 40,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 10,
   },
   menuTitle: {
     color: '#FFFFFF',
@@ -848,13 +976,18 @@ const styles = StyleSheet.create({
   },
   sliderContainer: {
     position: 'absolute',
-    top: 180,
+    top: 140,
     left: 20,
     right: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
     padding: 16,
     borderRadius: 12,
-    zIndex: 25,
+    zIndex: 40,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 10,
   },
   sliderLabel: {
     color: '#FFFFFF',
@@ -868,14 +1001,19 @@ const styles = StyleSheet.create({
   },
   positionControlsContainer: {
     position: 'absolute',
-    top: 180,
+    top: 140,
     left: 20,
     right: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
-    zIndex: 25,
+    zIndex: 40,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 10,
   },
   positionButtonsRow: {
     flexDirection: 'row',
@@ -904,14 +1042,19 @@ const styles = StyleSheet.create({
   },
   rotationControlsContainer: {
     position: 'absolute',
-    top: 180,
+    top: 140,
     left: 20,
     right: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
-    zIndex: 25,
+    zIndex: 40,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 10,
   },
   rotationText: {
     color: '#FFFFFF',
@@ -921,14 +1064,19 @@ const styles = StyleSheet.create({
   },
   tipsContainer: {
     position: 'absolute',
-    top: 180,
+    top: 140,
     left: 20,
     right: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
     padding: 16,
     borderRadius: 12,
     maxHeight: '50%',
-    zIndex: 25,
+    zIndex: 40,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 10,
   },
   tipsTitle: {
     color: '#FFFFFF',
@@ -1038,5 +1186,13 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 12,
     marginTop: 4,
+  },
+  backgroundOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 25,
+  },
+  topControlsHidden: {
+    zIndex: 5,
   },
 });

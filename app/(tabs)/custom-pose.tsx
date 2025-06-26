@@ -9,6 +9,7 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { Stack, useRouter } from 'expo-router';
 import { usePoseStore } from '../../store/poseStore';
@@ -93,153 +94,183 @@ export default function CustomPoseScreen() {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
-    >
-      <Stack.Screen options={{ title: 'Create Custom Pose' }} />
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      <Stack.Screen
+        options={{ title: 'Create Custom Pose', headerShown: false }}
+      />
 
-      <View style={styles.content}>
-        <Text style={styles.title}>Create Custom Pose</Text>
-        <Text style={styles.subtitle}>
-          Upload a photo to use as a pose reference
-        </Text>
+      <ScrollView
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
+          <Text style={styles.title}>Create Custom Pose</Text>
+          <Text style={styles.subtitle}>
+            Upload a photo to use as a pose reference
+          </Text>
+        </View>
 
-        {!image ? (
-          <TouchableOpacity style={styles.imagePlaceholder} onPress={pickImage}>
-            <Ionicons name="image-outline" size={48} color="#888" />
-            <Text style={styles.imagePlaceholderText}>
-              Tap to select an image
-            </Text>
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.imageContainer}>
-            <Image source={{ uri: image }} style={styles.image} />
-
-            {isLoading && (
-              <View style={styles.loadingOverlay}>
-                <ActivityIndicator size="large" color="#ffffff" />
-                <Text style={styles.loadingText}>Processing image...</Text>
-              </View>
-            )}
-          </View>
-        )}
-
-        {error && <Text style={styles.errorText}>{error}</Text>}
-
-        {image && (
-          <View style={styles.controlsContainer}>
-            <View style={styles.nameInputContainer}>
-              <Text style={styles.inputLabel}>Pose Name:</Text>
-              <TouchableOpacity
-                style={styles.nameDisplay}
-                onPress={() => {
-                  Alert.prompt(
-                    'Pose Name',
-                    'Enter a name for your custom pose',
-                    (text) => setPoseName(text),
-                    'plain-text',
-                    poseName
-                  );
-                }}
-              >
-                <Text style={styles.nameText}>{poseName}</Text>
-                <Ionicons name="pencil-outline" size={16} color="#3B82F6" />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.infoContainer}>
-              <Ionicons
-                name="information-circle-outline"
-                size={20}
-                color="#666"
-              />
-              <Text style={styles.infoText}>
-                This image will be used as an overlay reference in the camera
-                view
+        <View style={styles.content}>
+          {!image ? (
+            <TouchableOpacity
+              style={styles.imagePlaceholder}
+              onPress={pickImage}
+            >
+              <Ionicons name="image-outline" size={48} color="#888" />
+              <Text style={styles.imagePlaceholderText}>
+                Tap to select an image
               </Text>
-            </View>
-          </View>
-        )}
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.imageContainer}>
+              <Image source={{ uri: image }} style={styles.image} />
 
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.button, styles.selectButton]}
-            onPress={pickImage}
-          >
-            <Ionicons name="image-outline" size={20} color="#fff" />
-            <Text style={styles.buttonText}>
-              {image ? 'Choose Different Image' : 'Select Image'}
-            </Text>
-          </TouchableOpacity>
+              {isLoading && (
+                <View style={styles.loadingOverlay}>
+                  <ActivityIndicator size="large" color="#ffffff" />
+                  <Text style={styles.loadingText}>Processing image...</Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          {error && <Text style={styles.errorText}>{error}</Text>}
 
           {image && (
-            <TouchableOpacity
-              style={[styles.button, styles.saveButton]}
-              onPress={savePose}
-            >
-              <Ionicons name="save-outline" size={20} color="#fff" />
-              <Text style={styles.buttonText}>Save Pose</Text>
-            </TouchableOpacity>
+            <View style={styles.controlsContainer}>
+              <View style={styles.nameInputContainer}>
+                <Text style={styles.inputLabel}>Pose Name:</Text>
+                <TouchableOpacity
+                  style={styles.nameDisplay}
+                  onPress={() => {
+                    Alert.prompt(
+                      'Pose Name',
+                      'Enter a name for your custom pose',
+                      (text) => setPoseName(text),
+                      'plain-text',
+                      poseName
+                    );
+                  }}
+                >
+                  <Text style={styles.nameText}>{poseName}</Text>
+                  <Ionicons name="pencil-outline" size={16} color="#3B82F6" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.infoContainer}>
+                <Ionicons
+                  name="information-circle-outline"
+                  size={20}
+                  color="#666"
+                />
+                <Text style={styles.infoText}>
+                  This image will be used as an overlay reference in the camera
+                  view
+                </Text>
+              </View>
+            </View>
           )}
+
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[styles.button, styles.selectButton]}
+              onPress={pickImage}
+            >
+              <Ionicons name="image-outline" size={20} color="#fff" />
+              <Text style={styles.buttonText}>
+                {image ? 'Choose Different Image' : 'Select Image'}
+              </Text>
+            </TouchableOpacity>
+
+            {image && (
+              <TouchableOpacity
+                style={[styles.button, styles.saveButton]}
+                onPress={savePose}
+              >
+                <Ionicons name="save-outline" size={20} color="#fff" />
+                <Text style={styles.buttonText}>Save Pose</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F9FAFB',
+  },
+  scrollContainer: {
+    flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
     padding: 20,
+    paddingBottom: 40,
+  },
+  header: {
     alignItems: 'center',
+    marginBottom: 32,
   },
   content: {
     width: '100%',
   },
   title: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 8,
-    color: '#111',
+    color: '#111827',
     textAlign: 'center',
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 24,
+    fontSize: 18,
+    color: '#6B7280',
+    marginBottom: 0,
     textAlign: 'center',
+    lineHeight: 24,
   },
   imagePlaceholder: {
     width: '100%',
     aspectRatio: 3 / 4,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
-    borderWidth: 2,
-    borderColor: '#e0e0e0',
+    borderWidth: 3,
+    borderColor: '#E5E7EB',
     borderStyle: 'dashed',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   imagePlaceholderText: {
-    fontSize: 16,
-    color: '#888',
-    marginTop: 12,
+    fontSize: 18,
+    color: '#9CA3AF',
+    marginTop: 16,
+    fontWeight: '500',
   },
   imageContainer: {
     width: '100%',
     aspectRatio: 3 / 4,
-    borderRadius: 12,
+    borderRadius: 20,
     overflow: 'hidden',
     marginBottom: 24,
     position: 'relative',
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
   },
   image: {
     width: '100%',
@@ -262,71 +293,89 @@ const styles = StyleSheet.create({
   },
   controlsContainer: {
     width: '100%',
-    marginBottom: 24,
+    marginBottom: 8,
   },
   nameInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   inputLabel: {
-    fontSize: 16,
-    fontWeight: '500',
-    marginRight: 8,
-    color: '#333',
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+    color: '#374151',
   },
   nameDisplay: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   nameText: {
     fontSize: 16,
-    color: '#333',
+    color: '#374151',
+    fontWeight: '500',
   },
   infoContainer: {
     flexDirection: 'row',
-    backgroundColor: '#f9f9f9',
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: '#EBF5FF',
+    padding: 16,
+    borderRadius: 12,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
   },
   infoText: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: '#666',
+    marginLeft: 12,
+    fontSize: 15,
+    color: '#1E40AF',
     flex: 1,
+    lineHeight: 20,
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
+    alignItems: 'center',
     width: '100%',
+    gap: 16,
+    marginTop: 24,
+    flexWrap: 'wrap',
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    minWidth: 150,
+    paddingVertical: 16,
+    paddingHorizontal: 28,
+    borderRadius: 16,
+    minWidth: 160,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
   },
   selectButton: {
-    backgroundColor: '#5e72e4',
+    backgroundColor: '#3B82F6',
   },
   saveButton: {
-    backgroundColor: '#2dce89',
+    backgroundColor: '#10B981',
   },
   buttonText: {
     color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
     marginLeft: 8,
+    letterSpacing: 0.3,
   },
   errorText: {
     color: '#f5365c',
